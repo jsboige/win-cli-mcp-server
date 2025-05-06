@@ -102,8 +102,9 @@ export function loadConfig(configPath?: string): ServerConfig {
 function mergeConfigs(defaultConfig: ServerConfig, userConfig: Partial<ServerConfig>): ServerConfig {
   const merged: ServerConfig = {
     security: {
-      // If user provided security config, use it entirely, otherwise use default
-      ...(userConfig.security || defaultConfig.security)
+      // Merge security config to preserve defaults
+      ...(defaultConfig.security),
+      ...(userConfig.security || {})
     },
     shells: {
       // Same for each shell - if user provided config, use it entirely
