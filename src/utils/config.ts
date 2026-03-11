@@ -26,7 +26,7 @@ export const DEFAULT_CONFIG: ServerConfig = {
     restrictWorkingDirectory: true,
     logCommands: true,
     maxHistorySize: 1000,
-    commandTimeout: 30,
+    commandTimeout: 300,
     enableInjectionProtection: true
   },
   shells: {
@@ -34,22 +34,19 @@ export const DEFAULT_CONFIG: ServerConfig = {
       enabled: true,
       command: 'powershell.exe',
       args: ['-NoProfile', '-NonInteractive', '-Command'],
-      validatePath: (dir: string) => dir.match(defaultValidatePathRegex) !== null,
-      blockedOperators: ['&', '|', ';', '`']
+      validatePath: (dir: string) => dir.match(defaultValidatePathRegex) !== null
     },
     cmd: {
       enabled: true,
       command: 'cmd.exe',
       args: ['/c'],
-      validatePath: (dir: string) => dir.match(defaultValidatePathRegex) !== null,
-      blockedOperators: ['&', '|', ';', '`']
+      validatePath: (dir: string) => dir.match(defaultValidatePathRegex) !== null
     },
     gitbash: {
       enabled: true,
       command: 'C:\\Program Files\\Git\\bin\\bash.exe',
       args: ['-c'],
-      validatePath: (dir: string) => dir.match(defaultValidatePathRegex) !== null,
-      blockedOperators: ['&', '|', ';', '`']
+      validatePath: (dir: string) => dir.match(defaultValidatePathRegex) !== null
     }
   },
   ssh: {
