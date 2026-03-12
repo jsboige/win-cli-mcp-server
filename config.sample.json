@@ -20,27 +20,24 @@
     "restrictWorkingDirectory": true,
     "logCommands": true,
     "maxHistorySize": 1000,
-    "commandTimeout": 30,
+    "commandTimeout": 300,
     "enableInjectionProtection": true
   },
   "shells": {
     "powershell": {
       "enabled": true,
       "command": "powershell.exe",
-      "args": ["-NoProfile", "-NonInteractive", "-Command"],
-      "blockedOperators": ["&", "|", ";", "`"]
+      "args": ["-NoProfile", "-NonInteractive", "-Command"]
     },
     "cmd": {
       "enabled": true,
       "command": "cmd.exe",
-      "args": ["/c"],
-      "blockedOperators": ["&", "|", ";", "`"]
+      "args": ["/c"]
     },
     "gitbash": {
       "enabled": true,
       "command": "C:\\Program Files\\Git\\bin\\bash.exe",
-      "args": ["-c"],
-      "blockedOperators": ["&", "|", ";", "`"]
+      "args": ["-c"]
     }
   },
   "ssh": {
