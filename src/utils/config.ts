@@ -129,7 +129,8 @@ function mergeConfigs(defaultConfig: ServerConfig, userConfig: Partial<ServerCon
     if (!shell.validatePath) {
       shell.validatePath = defaultConfig.shells[key].validatePath;
     }
-    if (!shell.blockedOperators) {
+    // Use 'in' operator to check if property exists, as empty array [] is falsy
+    if (!('blockedOperators' in shell)) {
       shell.blockedOperators = defaultConfig.shells[key].blockedOperators;
     }
   }
