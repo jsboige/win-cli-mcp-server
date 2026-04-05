@@ -2,3 +2,5 @@
 /dist/
 config.json
 *.txt
+.claude/
+test-*.js
