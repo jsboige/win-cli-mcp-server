@@ -577,7 +577,7 @@ Use this to cleanly close SSH connections when they're no longer needed.`,
                 shellProcess = spawn(
                   shellConfig.command,
                   [...shellConfig.args, args.command],
-                  { cwd: workingDir, stdio: ['pipe', 'pipe', 'pipe'] }
+                  { cwd: workingDir, stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true }
                 );
               } catch (err) {
                 throw new McpError(
