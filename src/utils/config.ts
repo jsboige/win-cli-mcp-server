@@ -3,50 +3,39 @@ import path from 'path';
 import os from 'os';
 import { ServerConfig, ShellConfig } from '../types/config.js';
 
-const defaultValidatePathRegex = /^[a-zA-Z]:\\(?:[^<>:"/\\|?*]+\\)*[^<>:"/\\|?*]*$/;
-
+// roo-extensions fork: defaults are fully unrestricted. Any config file the
+// user might drop on disk cannot re-bridge the security toggles below — see
+// mergeConfigs at the bottom of this file, which forces them back to defaults.
 export const DEFAULT_CONFIG: ServerConfig = {
   security: {
-    maxCommandLength: 2000,
-    blockedCommands: [
-      'rm', 'del', 'rmdir', 'format',
-      'shutdown', 'restart',
-      'reg', 'regedit',
-      'net', 'netsh',
-      'takeown', 'icacls'
-    ],
-    blockedArguments: [
-      "--exec", "-e", "/c", "-enc", "-encodedcommand",
-      "-command", "--interactive", "-i", "--login", "--system"
-    ],
-    allowedPaths: [
-      os.homedir(),
-      process.cwd()
-    ],
-    restrictWorkingDirectory: true,
+    maxCommandLength: 100000,
+    blockedCommands: [],
+    blockedArguments: [],
+    allowedPaths: [],
+    restrictWorkingDirectory: false,
     logCommands: true,
-    maxHistorySize: 1000,
-    commandTimeout: 300,
-    enableInjectionProtection: true
+    maxHistorySize: 3000,
+    commandTimeout: 600,
+    enableInjectionProtection: false
   },
   shells: {
     powershell: {
       enabled: true,
       command: 'powershell.exe',
-      args: ['-NoProfile', '-NonInteractive', '-Command'],
-      validatePath: (dir: string) => dir.match(defaultValidatePathRegex) !== null
+      args: ['-NoProfile', '-Command'],
+      validatePath: () => true
     },
     cmd: {
       enabled: true,
       command: 'cmd.exe',
       args: ['/c'],
-      validatePath: (dir: string) => dir.match(defaultValidatePathRegex) !== null
+      validatePath: () => true
     },
     gitbash: {
       enabled: true,
       command: 'C:\\Program Files\\Git\\bin\\bash.exe',
       args: ['-c'],
-      validatePath: (dir: string) => dir.match(defaultValidatePathRegex) !== null
+      validatePath: () => true
     }
   },
   ssh: {
@@ -99,9 +88,16 @@ export function loadConfig(configPath?: string): ServerConfig {
 function mergeConfigs(defaultConfig: ServerConfig, userConfig: Partial<ServerConfig>): ServerConfig {
   const merged: ServerConfig = {
     security: {
-      // Merge security config to preserve defaults
       ...(defaultConfig.security),
-      ...(userConfig.security || {})
+      ...(userConfig.security || {}),
+      // roo-extensions fork: lock the security-restriction toggles to defaults
+      // so a misconfigured config.json on disk cannot re-bridge the MCP.
+      maxCommandLength: defaultConfig.security.maxCommandLength,
+      blockedCommands: defaultConfig.security.blockedCommands,
+      blockedArguments: defaultConfig.security.blockedArguments,
+      allowedPaths: defaultConfig.security.allowedPaths,
+      restrictWorkingDirectory: defaultConfig.security.restrictWorkingDirectory,
+      enableInjectionProtection: defaultConfig.security.enableInjectionProtection
     },
     shells: {
       // Same for each shell - if user provided config, use it entirely
@@ -121,15 +117,11 @@ function mergeConfigs(defaultConfig: ServerConfig, userConfig: Partial<ServerCon
     }
   };
 
-  // Only add validatePath functions and blocked operators if they don't exist
+  // roo-extensions fork: force shells to permissive validatePath/blockedOperators
+  // regardless of what user config supplied — full debridé.
   for (const [key, shell] of Object.entries(merged.shells) as [keyof typeof merged.shells, ShellConfig][]) {
-    if (!shell.validatePath) {
-      shell.validatePath = defaultConfig.shells[key].validatePath;
-    }
-    // Use 'in' operator to check if property exists, as empty array [] is falsy
-    if (!('blockedOperators' in shell)) {
-      shell.blockedOperators = defaultConfig.shells[key].blockedOperators;
-    }
+    shell.validatePath = defaultConfig.shells[key].validatePath;
+    shell.blockedOperators = [];
   }
 
   return merged;
