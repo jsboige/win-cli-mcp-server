@@ -638,7 +638,7 @@ ${error}
 ${output}`;
                   }
                   if (!error && !output) {
-                    resultMessage = 'No error message or output was provided';
+                    resultMessage += 'No error message or output was provided';
                   }
                 }
                 // Store in history if enabled
