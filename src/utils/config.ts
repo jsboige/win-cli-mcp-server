@@ -79,6 +79,13 @@ export function loadConfig(configPath?: string): ServerConfig {
     ? mergeConfigs(DEFAULT_CONFIG, loadedConfig)
     : DEFAULT_CONFIG;
 
+  // Environment variable override — survives config file reinstalls/cleanups
+  const envTimeout = parseInt(process.env.WIN_CLI_COMMAND_TIMEOUT || '', 10);
+  if (envTimeout >= 1) {
+    console.error(`WIN_CLI_COMMAND_TIMEOUT=${envTimeout} overrides config file value ${mergedConfig.security.commandTimeout}`);
+    mergedConfig.security.commandTimeout = envTimeout;
+  }
+
   // Validate the merged config
   validateConfig(mergedConfig);
 
