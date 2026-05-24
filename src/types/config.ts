@@ -8,6 +8,7 @@ export interface SecurityConfig {
   maxHistorySize: number;
   commandTimeout: number;
   enableInjectionProtection: boolean;
+  maxOutputBytes?: number;
 }
 
 export interface ShellConfig {

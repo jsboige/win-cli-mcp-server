@@ -593,36 +593,54 @@ Use this to cleanly close SSH connections when they're no longer needed.`,
                 );
               }
 
+              const maxOutputBytes = this.config.security.maxOutputBytes ?? 120_000;
               let output = '';
               let error = '';
+              let outputTruncated = false;
 
-              shellProcess.stdout.on('data', (data) => {
-                output += data.toString();
+              shellProcess.stdout.on('data', (data: Buffer) => {
+                if (!outputTruncated) {
+                  output += data.toString();
+                  if (Buffer.byteLength(output, 'utf-8') > maxOutputBytes) {
+                    outputTruncated = true;
+                    output = output.slice(0, Math.floor(maxOutputBytes / 2));
+                    try { shellProcess.kill(); } catch {}
+                  }
+                }
               });
 
-              shellProcess.stderr.on('data', (data) => {
-                error += data.toString();
+              shellProcess.stderr.on('data', (data: Buffer) => {
+                if (!outputTruncated) {
+                  error += data.toString();
+                }
               });
 
               shellProcess.on('close', (code) => {
-                // Prepare detailed result message
                 let resultMessage = '';
-                
-                if (code === 0) {
-                  resultMessage = output || 'Command completed successfully (no output)';
+                const truncationNotice = outputTruncated
+                  ? `
+
+[OUTPUT TRUNCATED at ${maxOutputBytes} bytes — process killed to prevent context explosion]`
+                  : '';
+
+                if (code === 0 || outputTruncated) {
+                  resultMessage = (output || 'Command completed successfully (no output)') + truncationNotice;
                 } else {
-                  resultMessage = `Command failed with exit code ${code}\n`;
+                  resultMessage = `Command failed with exit code ${code}
+`;
                   if (error) {
-                    resultMessage += `Error output:\n${error}\n`;
+                    resultMessage += `Error output:
+${error}
+`;
                   }
                   if (output) {
-                    resultMessage += `Standard output:\n${output}`;
+                    resultMessage += `Standard output:
+${output}`;
                   }
                   if (!error && !output) {
                     resultMessage += 'No error message or output was provided';
                   }
                 }
-
                 // Store in history if enabled
                 if (this.config.security.logCommands) {
                   this.commandHistory.push({
