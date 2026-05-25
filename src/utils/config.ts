@@ -99,12 +99,15 @@ function mergeConfigs(defaultConfig: ServerConfig, userConfig: Partial<ServerCon
       ...(userConfig.security || {}),
       // roo-extensions fork: lock the security-restriction toggles to defaults
       // so a misconfigured config.json on disk cannot re-bridge the MCP.
+      // commandTimeout is also locked — a local override (e.g. 180s after
+      // reinstall) cannot undo the fleet default (600s) or the env-var.
       maxCommandLength: defaultConfig.security.maxCommandLength,
       blockedCommands: defaultConfig.security.blockedCommands,
       blockedArguments: defaultConfig.security.blockedArguments,
       allowedPaths: defaultConfig.security.allowedPaths,
       restrictWorkingDirectory: defaultConfig.security.restrictWorkingDirectory,
-      enableInjectionProtection: defaultConfig.security.enableInjectionProtection
+      enableInjectionProtection: defaultConfig.security.enableInjectionProtection,
+      commandTimeout: defaultConfig.security.commandTimeout
     },
     shells: {
       // Same for each shell - if user provided config, use it entirely
